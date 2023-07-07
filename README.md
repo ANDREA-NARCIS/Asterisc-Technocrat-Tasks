@@ -2,11 +2,11 @@ Daily Task Scheduler:
 This project is a part of my Python Developer Internship at Asterisc Technocrat. The Daily Task Scheduler is a software solution designed to help individuals organize and manage their daily tasks and activities efficiently. The project focuses on providing a user-friendly interface with an intuitive layout and navigation for users to easily create, manage, and add reminders for their daily tasks.
 
 Features:
-User login functionality.
-Ability to add, update, and delete tasks.
-Option to set reminders for specific tasks.
-User-friendly graphical user interface using Tkinter.
-Simple and easy-to-understand codebase.
+User Registration and Login.   
+Users can add, update, and delete tasks. Tasks include a task ID, task name, and task date.        
+Users can view their tasks, which are displayed in a list format.        
+Users can set reminders for specific tasks by entering the reminder time in the HH:MM format.      
+Error Handling and Validation
 
 Technologies Used:
 Python programming language
@@ -14,10 +14,9 @@ Tkinter graphical user interface framework
 Visual Studio Code IDE
 
 Project Description:
-The Daily Task Scheduler provides a user-friendly solution for organizing and managing daily tasks efficiently. With an intuitive interface, users can easily create, update, and delete tasks as needed. The application allows users to set reminders for important tasks, ensuring they never miss a deadline. The code for the Daily Task Scheduler utilizes Python and the Tkinter graphical user interface framework. It implements various functionalities such as user registration and login, task creation and management, and reminder settings. The code follows best practices and maintains a clean and modular structure, making it easy to understand and extend.
+The Daily Task Scheduler provides a user-friendly solution for organizing and managing daily tasks efficiently.The code utilizes the tkinter library to create a task manager application with a graphical user interface. It allows users to register and login with a username and password. Once logged in, users can perform operations such as adding, updating, and deleting tasks, as well as viewing their tasks. Additionally, users have the ability to set reminders for specific tasks by entering the desired reminder time. The code incorporates error handling and input validation to ensure data accuracy and provide a seamless user experience.
 
 Notes:
-Please note that the code provided is a simulation, and you'll need to implement the actual logic for scheduling reminders using your preferred method or library.
+Kindly note that the code provided serves as a simulation, and it is necessary to incorporate the actual logic for scheduling reminders using your preferred method or library.
 
-As a novice learner, I am continuously learning and improving my programming skills by building projects like this one. The Daily Task Scheduler is one such project that showcases my progress as a Python developer and my dedication to creating practical software solutions.
-
+As an aspiring learner, I continuously enhance my programming abilities by undertaking projects like the Daily Task Scheduler. This particular project serves as a testament to my growth as a Python developer and my unwavering commitment to crafting functional software solutions.
