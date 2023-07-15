@@ -1,0 +1,128 @@
+import sys
+import easygui
+
+
+class MenuItem:
+    def __init__(self, name, price):
+        self.name = name
+        self.price = price
+
+
+class OrderItem:
+    def __init__(self, menu_item, quantity):
+        self.menu_item = menu_item
+        self.quantity = quantity
+
+
+class CafeBillingApplication:
+    def __init__(self):
+        self.menu = []
+        self.orders = []
+
+    def add_menu_item(self, name, price):
+        menu_item = MenuItem(name, price)
+        self.menu.append(menu_item)
+        easygui.msgbox(f"Menu item '{name}' added successfully!")
+
+    def display_menu(self):
+        menu_text = "Menu:\n"
+        for index, menu_item in enumerate(self.menu, start=1):
+            menu_text += f"{index}. {menu_item.name} - ${menu_item.price}\n"
+        easygui.msgbox(menu_text, "Menu")
+
+    def take_order(self):
+        self.display_menu()
+        order_items = []
+
+        while True:
+            choice = easygui.enterbox("Enter the menu item number (or 'done' to finish):", "Take Order")
+
+            if choice == 'done':
+                break
+
+            try:
+                choice = int(choice)
+                if choice < 1 or choice > len(self.menu):
+                    easygui.msgbox("Invalid menu item number. Please try again.")
+                    continue
+
+                quantity = int(easygui.enterbox("Enter the quantity:", "Take Order"))
+                menu_item = self.menu[choice - 1]
+                order_item = OrderItem(menu_item, quantity)
+                order_items.append(order_item)
+
+                easygui.msgbox(f"Added {menu_item.name} x {quantity} to the order.")
+
+            except ValueError:
+                easygui.msgbox("Invalid input. Please try again.")
+
+        self.orders.append(order_items)
+
+    def calculate_bill(self, order_items):
+        total = 0
+        for order_item in order_items:
+            total += order_item.menu_item.price * order_item.quantity
+        return total
+
+    def apply_discount(self, total, discount):
+        return total - (total * discount)
+
+    def apply_tax(self, total, tax_rate):
+        return total + (total * tax_rate)
+
+    def apply_service_charge(self, total, service_charge):
+        return total + (total * service_charge)
+
+    def generate_bill(self):
+        if len(self.orders) == 0:
+            easygui.msgbox("No orders placed yet!")
+            return
+
+        for index, order_items in enumerate(self.orders, start=1):
+            order_text = f"Order {index}:\n"
+            for order_item in order_items:
+                order_text += f"{order_item.menu_item.name} x {order_item.quantity}\n"
+
+            total = self.calculate_bill(order_items)
+            order_text += f"Total: ${total:.2f}\n"
+
+            choice = easygui.buttonbox("Apply discount, tax, or service charge?", "Generate Bill", choices=["Yes", "No"])
+            if choice == "Yes":
+                discount = float(easygui.enterbox("Enter discount percentage (e.g., 10 for 10%):", "Generate Bill"))
+                total = self.apply_discount(total, discount)
+
+                tax_rate = float(easygui.enterbox("Enter tax rate percentage (e.g., 5 for 5%):", "Generate Bill"))
+                total = self.apply_tax(total, tax_rate)
+
+                service_charge = float(easygui.enterbox("Enter service charge percentage (e.g., 8 for 8%):", "Generate Bill"))
+                total = self.apply_service_charge(total, service_charge)
+
+            order_text += f"Total bill (including discounts, taxes, and service charges): ${total:.2f}"
+            easygui.msgbox(order_text, "Bill")
+
+        self.orders = []  # Clear the orders after generating bills
+
+
+# Main program
+app = CafeBillingApplication()
+
+while True:
+    choice = easygui.buttonbox("Cafe Billing Application", choices=["Add Menu Item", "Take Order", "Generate Bill", "Exit"])
+
+    if choice == "Add Menu Item":
+        name = easygui.enterbox("Enter menu item name:", "Add Menu Item")
+        price = float(easygui.enterbox("Enter menu item price:", "Add Menu Item"))
+        app.add_menu_item(name, price)
+
+    elif choice == "Take Order":
+        app.take_order()
+
+    elif choice == "Generate Bill":
+        app.generate_bill()
+
+    elif choice == "Exit":
+        easygui.msgbox("Thank you for using Cafe Billing Application!")
+        sys.exit()
+
+    else:
+        easygui.msgbox("Invalid choice. Please try again.")
