@@ -1,0 +1,400 @@
+import json
+import datetime
+import tkinter as tk
+from tkinter import messagebox, ttk
+
+EMPLOYEE_DATA_FILE = "employee_data.json"
+USER_DATA_FILE = "user_data.json"
+
+user_credentials = {}
+
+def load_user_credentials():
+    try:
+        with open(USER_DATA_FILE, "r") as file:
+            user_data = json.load(file)
+    except FileNotFoundError:
+        user_data = {}
+    return user_data
+
+def save_user_credentials(user_data):
+    with open(USER_DATA_FILE, "w") as file:
+        json.dump(user_data, file)
+
+def register_user(username, password):
+    user_data = load_user_credentials()
+
+    if username in user_data:
+        messagebox.showerror("Error", "Username already exists!")
+        return False
+
+    user_data[username] = {"password": password}  # Store the password as a key-value pair
+    save_user_credentials(user_data)
+    print("User registered:", user_data)  # Debug
+    messagebox.showinfo("Success", "Registration successful!")
+    return True
+
+def login_user(username, password):
+    user_data = load_user_credentials()
+
+    if username not in user_data or user_data[username]["password"] != password:
+        messagebox.showerror("Error", "Invalid username or password!")
+        return False
+
+    print("User logged in:", user_data[username])  # Debug
+    return True
+
+def authenticate_user(username, password, mode):
+    global user_credentials
+
+    if mode == "register":
+        return register_user(username, password)
+    elif mode == "login":
+        return login_user(username, password)
+
+def show_login_dialog():
+    login_window = tk.Toplevel(root)
+    login_window.title("Login")
+
+    tk.Label(login_window, text="Username:").grid(row=0, column=0, padx=5, pady=5)
+    username_entry = tk.Entry(login_window)
+    username_entry.grid(row=0, column=1, padx=5, pady=5)
+
+    tk.Label(login_window, text="Password:").grid(row=1, column=0, padx=5, pady=5)
+    password_entry = tk.Entry(login_window, show="*")
+    password_entry.grid(row=1, column=1, padx=5, pady=5)
+
+    login_btn = tk.Button(login_window, text="Login", command=lambda: login(username_entry.get(), password_entry.get()))
+    login_btn.grid(row=2, column=0, padx=5, pady=5)
+
+    register_btn = tk.Button(login_window, text="Register", command=lambda: register(username_entry.get(), password_entry.get()))
+    register_btn.grid(row=2, column=1, padx=5, pady=5)
+
+def register(username, password):
+    if authenticate_user(username, password, "register"):
+        user_credentials["username"] = username
+        show_employee_management_ui()
+
+def login(username, password):
+    if authenticate_user(username, password, "login"):
+        user_credentials["username"] = username
+        show_employee_management_ui()
+
+def show_employee_management_ui():
+    login_btn.destroy()  # Hide the login button once the user has logged in.
+    # Create the main application window
+    root.geometry("800x600")
+    root.title("Employee Payroll System")
+
+    # Define StringVar variables for holding entry widget values
+    id_var = tk.StringVar()
+    name_var = tk.StringVar()
+    address_var = tk.StringVar()
+    contact_var = tk.StringVar()
+    emp_history_var = tk.StringVar()
+    hours_worked_var = tk.StringVar()
+    overtime_hours_var = tk.StringVar()
+    allowances_var = tk.StringVar()
+    deductions_var = tk.StringVar()
+    date_var = tk.StringVar()
+    attendance_var = tk.StringVar()
+
+    def load_employee_data():
+        # Load employee data from the file if it exists, otherwise return an empty dictionary
+        try:
+            with open(EMPLOYEE_DATA_FILE, "r") as file:
+                employee_data = json.load(file)
+        except FileNotFoundError:
+            employee_data = {}
+        return employee_data
+
+    def save_employee_data(employee_data):
+        # Save employee data to the file
+        with open(EMPLOYEE_DATA_FILE, "w") as file:
+            json.dump(employee_data, file)
+
+    def add_employee():
+        # Get employee details from the entry widgets
+        emp_id = id_var.get()
+        name = name_var.get()
+        address = address_var.get()
+        contact = contact_var.get()
+        employment_history = emp_history_var.get()
+
+        employee_data = load_employee_data()
+
+        # Check if the employee ID already exists
+        if emp_id in employee_data:
+            messagebox.showerror("Error", "Employee with the same ID already exists!")
+            return
+
+        # Add the new employee to the employee_data dictionary
+        employee_data[emp_id] = {
+            "name": name,
+            "address": address,
+            "contact": contact,
+            "employment_history": employment_history,
+            "attendance": [],
+            "salary": 0,
+        }
+
+        save_employee_data(employee_data)
+        messagebox.showinfo("Success", "Employee added successfully!")
+
+    def update_employee():
+        emp_id = id_var.get()
+
+        employee_data = load_employee_data()
+
+        # Check if the employee ID exists
+        if emp_id not in employee_data:
+            messagebox.showerror("Error", "Employee ID not found!")
+            return
+
+        # Update employee details in the employee_data dictionary
+        name = name_var.get()
+        address = address_var.get()
+        contact = contact_var.get()
+        employment_history = emp_history_var.get()
+
+        employee_data[emp_id]["name"] = name
+        employee_data[emp_id]["address"] = address
+        employee_data[emp_id]["contact"] = contact
+        employee_data[emp_id]["employment_history"] = employment_history
+
+        save_employee_data(employee_data)
+        messagebox.showinfo("Success", "Employee details updated successfully!")
+
+    def delete_employee():
+        emp_id = id_var.get()
+
+        employee_data = load_employee_data()
+
+        # Check if the employee ID exists
+        if emp_id not in employee_data:
+            messagebox.showerror("Error", "Employee ID not found!")
+            return
+
+        # Delete the employee from the employee_data dictionary
+        del employee_data[emp_id]
+
+        save_employee_data(employee_data)
+        messagebox.showinfo("Success", "Employee deleted successfully!")
+
+    def calculate_salary():
+        emp_id = id_var.get()
+
+        employee_data = load_employee_data()
+
+        # Check if the employee ID exists
+        if emp_id not in employee_data:
+            messagebox.showerror("Error", "Employee ID not found!")
+            return
+
+        # Get salary details from the entry widgets
+        hours_worked = float(hours_worked_var.get())
+        overtime_hours = float(overtime_hours_var.get())
+        allowances = float(allowances_var.get())
+        deductions = float(deductions_var.get())
+
+        # Calculate the total salary and update it in the employee_data dictionary
+        basic_salary = 20.0 * hours_worked + 5.0 * overtime_hours + allowances
+        total_salary = basic_salary - deductions
+        employee_data[emp_id]["salary"] = total_salary
+
+        save_employee_data(employee_data)
+        messagebox.showinfo("Success", f"Salary calculated and updated: {total_salary:.2f}")
+
+    def track_attendance():
+        emp_id = id_var.get()
+
+        employee_data = load_employee_data()
+
+        # Check if the employee ID exists
+        if emp_id not in employee_data:
+            messagebox.showerror("Error", "Employee ID not found!")
+            return
+
+        # Get attendance details from the entry widgets
+        date_str = date_var.get()
+        try:
+            date = datetime.datetime.strptime(date_str, "%Y-%m-%d")
+        except ValueError:
+            messagebox.showerror("Error", "Invalid date format. Please use YYYY-MM-DD.")
+            return
+
+        status = attendance_var.get().lower()
+        if status not in ["present", "absent"]:
+            messagebox.showerror("Error", "Invalid attendance status. Please enter 'Present' or 'Absent'.")
+            return
+
+        # Add the attendance record to the employee_data dictionary
+        employee_data[emp_id]["attendance"].append({"date": date_str, "status": status})
+
+        save_employee_data(employee_data)
+        messagebox.showinfo("Success", "Attendance recorded successfully!")
+
+    def clear_entries():
+        # Clear all entry widget values
+        id_var.set("")
+        name_var.set("")
+        address_var.set("")
+        contact_var.set("")
+        emp_history_var.set("")
+        hours_worked_var.set("")
+        overtime_hours_var.set("")
+        allowances_var.set("")
+        deductions_var.set("")
+        date_var.set("")
+        attendance_var.set("")
+
+    def show_all_employee_details():
+        employee_data = load_employee_data()
+
+        # Check if any employees exist
+        if not employee_data:
+            messagebox.showinfo("No Employees", "No employees found.")
+            return
+
+        # Create a new window to display employee details in a table
+        details_window = tk.Toplevel(root)
+        details_window.title("All Employee Details")
+
+        # Create a Treeview widget to display the employee details in a table format
+        tree = ttk.Treeview(details_window)
+        tree["columns"] = ("name", "address", "contact", "employment_history")
+
+        tree.heading("#1", text="Employee ID")
+        tree.heading("name", text="Name")
+        tree.heading("address", text="Address")
+        tree.heading("contact", text="Contact")
+        tree.heading("employment_history", text="Employment History")
+
+        tree.column("#1", width=100)
+        tree.column("name", width=150)
+        tree.column("address", width=200)
+        tree.column("contact", width=120)
+        tree.column("employment_history", width=200)
+
+        # Populate the tree with employee details
+        for emp_id, emp_details in employee_data.items():
+            name = emp_details["name"]
+            address = emp_details["address"]
+            contact = emp_details["contact"]
+            emp_history = emp_details["employment_history"]
+            tree.insert("", "end", text=emp_id, values=(name, address, contact, emp_history))
+
+        tree.pack(fill="both", expand=True)
+
+    def delete_all_details():
+        # Confirm before deleting all employee details
+        response = messagebox.askyesno("Confirm Delete", "Are you sure you want to delete all employee details?")
+        if response:
+            # Clear all employee data and save it to the file
+            employee_data = {}
+            save_employee_data(employee_data)
+            clear_entries()
+            messagebox.showinfo("Success", "All employee details deleted successfully!")
+
+    def create_widgets():
+        # Create labels and entry widgets for employee details
+        id_label = tk.Label(root, text="Employee ID:")
+        id_label.grid(row=0, column=0, padx=5, pady=5)
+        id_entry = tk.Entry(root, textvariable=id_var)
+        id_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        name_label = tk.Label(root, text="Name:")
+        name_label.grid(row=1, column=0, padx=5, pady=5)
+        name_entry = tk.Entry(root, textvariable=name_var)
+        name_entry.grid(row=1, column=1, padx=5, pady=5)
+
+        address_label = tk.Label(root, text="Address:")
+        address_label.grid(row=2, column=0, padx=5, pady=5)
+        address_entry = tk.Entry(root, textvariable=address_var)
+        address_entry.grid(row=2, column=1, padx=5, pady=5)
+
+        contact_label = tk.Label(root, text="Contact:")
+        contact_label.grid(row=3, column=0, padx=5, pady=5)
+        contact_entry = tk.Entry(root, textvariable=contact_var)
+        contact_entry.grid(row=3, column=1, padx=5, pady=5)
+
+        emp_history_label = tk.Label(root, text="Employment History:")
+        emp_history_label.grid(row=4, column=0, padx=5, pady=5)
+        emp_history_entry = tk.Entry(root, textvariable=emp_history_var)
+        emp_history_entry.grid(row=4, column=1, padx=5, pady=5)
+
+        # Buttons for various operations
+        add_btn = tk.Button(root, text="Add Employee", command=add_employee)
+        add_btn.grid(row=5, column=0, padx=5, pady=5)
+
+        update_btn = tk.Button(root, text="Update Employee", command=update_employee)
+        update_btn.grid(row=5, column=1, padx=5, pady=5)
+
+        delete_btn = tk.Button(root, text="Delete Employee", command=delete_employee)
+        delete_btn.grid(row=5, column=2, padx=5, pady=5)
+
+        # Salary Calculation
+        hours_worked_label = tk.Label(root, text="Hours Worked:")
+        hours_worked_label.grid(row=6, column=0, padx=5, pady=5)
+        hours_worked_entry = tk.Entry(root, textvariable=hours_worked_var)
+        hours_worked_entry.grid(row=6, column=1, padx=5, pady=5)
+
+        overtime_hours_label = tk.Label(root, text="Overtime Hours:")
+        overtime_hours_label.grid(row=7, column=0, padx=5, pady=5)
+        overtime_hours_entry = tk.Entry(root, textvariable=overtime_hours_var)
+        overtime_hours_entry.grid(row=7, column=1, padx=5, pady=5)
+
+        allowances_label = tk.Label(root, text="Allowances:")
+        allowances_label.grid(row=8, column=0, padx=5, pady=5)
+        allowances_entry = tk.Entry(root, textvariable=allowances_var)
+        allowances_entry.grid(row=8, column=1, padx=5, pady=5)
+
+        deductions_label = tk.Label(root, text="Deductions:")
+        deductions_label.grid(row=9, column=0, padx=5, pady=5)
+        deductions_entry = tk.Entry(root, textvariable=deductions_var)
+        deductions_entry.grid(row=9, column=1, padx=5, pady=5)
+
+        calculate_btn = tk.Button(root, text="Calculate Salary", command=calculate_salary)
+        calculate_btn.grid(row=10, column=0, padx=5, pady=5)
+
+        # Attendance Tracking
+        date_label = tk.Label(root, text="Date (YYYY-MM-DD):")
+        date_label.grid(row=11, column=0, padx=5, pady=5)
+        date_entry = tk.Entry(root, textvariable=date_var)
+        date_entry.grid(row=11, column=1, padx=5, pady=5)
+
+        attendance_label = tk.Label(root, text="Attendance (Present/Absent):")
+        attendance_label.grid(row=12, column=0, padx=5, pady=5)
+        attendance_entry = tk.Entry(root, textvariable=attendance_var)
+        attendance_entry.grid(row=12, column=1, padx=5, pady=5)
+
+        attendance_btn = tk.Button(root, text="Track Attendance", command=track_attendance)
+        attendance_btn.grid(row=13, column=0, padx=5, pady=5)
+
+        # Other Buttons
+        show_details_btn = tk.Button(root, text="Show Employee Details", command=show_all_employee_details)
+        show_details_btn.grid(row=14, column=0, padx=5, pady=5)
+
+        clear_entries_btn = tk.Button(root, text="Clear Entries", command=clear_entries)
+        clear_entries_btn.grid(row=14, column=1, padx=5, pady=5)
+
+        delete_all_btn = tk.Button(root, text="Delete All Details", command=delete_all_details)
+        delete_all_btn.grid(row=14, column=2, padx=5, pady=5)
+
+    # Create main UI
+    create_widgets()
+def main():
+    global root, login_btn
+
+    # Load user credentials on startup
+    user_credentials = load_user_credentials()
+
+    root = tk.Tk()
+    root.title("Employee Payroll System")
+
+    login_btn = tk.Button(root, text="Login", command=show_login_dialog)
+    login_btn.pack(padx=10, pady=10)
+
+    root.mainloop()
+
+if __name__ == "__main__":
+    main()
